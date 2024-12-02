@@ -1,7 +1,7 @@
 import { LatLng } from "leaflet";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import './root-page.css'
-import { LocationButton } from "../../../widgets/location";
+import { LocationButton } from "../../../widgets/location-button";
 
 export const RootPage = () => {
 
