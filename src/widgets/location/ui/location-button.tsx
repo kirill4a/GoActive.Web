@@ -1,17 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import { IconButton } from '@mui/material';
 import { LocationDisabledOutlined, LocationSearchingOutlined, MyLocationOutlined } from '@mui/icons-material';
 import { LocationEvent } from 'leaflet';
+import { LocationButtonOptions } from './location-button-options';
 import './location.css'
 
-export const LocationButton = ({ zoom }: { zoom: number | undefined }) => {
+export const LocationButton = ({ zoom }: LocationButtonOptions) => {
 
     const [icon, setIcon] = useState(<LocationSearchingOutlined fontSize='large' color='primary' />);
 
     const map = useMap();
-    map.on('locationfound', onLocationFound);
-    map.on('locationerror', onLocationError);
+
+    useEffect(() => {
+
+        if (!map) {
+            return;
+        }
+
+        map.on('locationfound', onLocationFound);
+        map.on('locationerror', onLocationError);
+
+        return () => {
+            map.off('locationfound', onLocationFound);
+            map.off('locationerror', onLocationError);
+        };
+    }, [map]);
 
     function locateMe() {
 

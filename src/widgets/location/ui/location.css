@@ -1,5 +1,5 @@
 .location-btn-container {
-    margin-bottom: 10%;
-    margin-right: 1%;
-    pointer-events: all !important;
+    margin-bottom: 10vh;
+    margin-right: 1vw;
+    pointer-events: all;
 }

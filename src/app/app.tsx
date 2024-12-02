@@ -1,12 +1,5 @@
 import { RootPage } from '../pages/root'
 
-function App() {
-
-  return (
-    <>
-      {RootPage()}
-    </>
-  )
-}
+const App = () => <RootPage />
 
 export default App
