@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import { IconButton } from '@mui/material';
 import { LocationDisabledOutlined, LocationSearchingOutlined, MyLocationOutlined } from '@mui/icons-material';
-import { LocationEvent } from 'leaflet';
+import { ErrorEvent, LocationEvent } from 'leaflet';
 import { LocationButtonOptions } from './location-button-options';
-import './location.css'
+import './location-button.css'
 
-export const LocationButton = ({ zoom }: LocationButtonOptions) => {
+export const LocationButton: FC<LocationButtonOptions> = (options?) => {
 
     const [icon, setIcon] = useState(<LocationSearchingOutlined fontSize='large' color='primary' />);
 
@@ -18,6 +18,18 @@ export const LocationButton = ({ zoom }: LocationButtonOptions) => {
             return;
         }
 
+        function onLocationFound(e: LocationEvent) {
+
+            setIcon(<MyLocationOutlined fontSize='large' color='success' />);
+            map.flyTo(e.latlng, options?.zoom);
+        }
+
+        function onLocationError(e: ErrorEvent) {
+
+            console.error(e);
+            setIcon(<LocationDisabledOutlined fontSize='large' color='error' />);
+        }
+
         map.on('locationfound', onLocationFound);
         map.on('locationerror', onLocationError);
 
@@ -25,23 +37,12 @@ export const LocationButton = ({ zoom }: LocationButtonOptions) => {
             map.off('locationfound', onLocationFound);
             map.off('locationerror', onLocationError);
         };
-    }, [map]);
+    }, [map, options?.zoom]);
 
     function locateMe() {
 
-        map.locate({ setView: true, maxZoom: zoom, enableHighAccuracy: true });
+        map.locate({ setView: true, maxZoom: options?.zoom, enableHighAccuracy: true });
     };
-
-    function onLocationFound(e: LocationEvent) {
-
-        setIcon(<MyLocationOutlined fontSize='large' color='success' />);
-        map.flyTo(e.latlng, zoom);
-    }
-
-    function onLocationError() {
-
-        setIcon(<LocationDisabledOutlined fontSize='large' color='error' />);
-    }
 
     return (
         <div className='leaflet-bottom leaflet-right location-btn-container'>
