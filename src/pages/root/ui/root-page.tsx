@@ -1,7 +1,8 @@
 import { LatLng } from "leaflet";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import './root-page.css'
+import { AttributionControl, MapContainer, TileLayer, ZoomControl } from "react-leaflet";
 import { LocationButton } from "../../../widgets/location-button";
+import { AddSketchButton } from "../../../widgets/add-sketch-button";
+import './root-page.css'
 
 export const RootPage = () => {
 
@@ -11,17 +12,22 @@ export const RootPage = () => {
 
     return (
         <>
-            <MapContainer center={defaultCenter} zoom={defaultZoom} scrollWheelZoom={true} maxZoom={maxOsmZoom} id="main-map">
+            <MapContainer
+                id='main-map'
+                center={defaultCenter}
+                zoom={defaultZoom}
+                scrollWheelZoom={true}
+                maxZoom={maxOsmZoom}
+                zoomControl={false}
+                attributionControl={false}>
                 <TileLayer
                     attribution='GoActive | &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
                 />
-                <Marker position={defaultCenter}>
-                    <Popup>
-                        A pretty CSS3 popup. <br /> Easily customizable.
-                    </Popup>
-                </Marker>
+                <AttributionControl position='topleft' />
+                <ZoomControl position='bottomright' />
                 <LocationButton zoom={defaultZoom} />
+                <AddSketchButton />
             </MapContainer>
         </>);
 };

@@ -1,0 +1,6 @@
+.add-btn-container {
+    bottom: 15em;
+    pointer-events: all;
+    display: flex;
+    flex-direction: column;
+}
