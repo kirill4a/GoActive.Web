@@ -1,0 +1,1 @@
+export const goActiveApiBaseUrl = 'http://localhost:5129/';
