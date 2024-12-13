@@ -3,7 +3,9 @@ import { IconButton } from "@mui/material";
 import { AddCircleOutline, CancelOutlined, CheckCircleOutline } from '@mui/icons-material';
 import { LatLng } from "leaflet";
 import { CenteredMarker } from "./centered-marker";
-import './add-sketch-button.css'
+import { Sketch } from "../../../shared/api";
+import { CreateSketch } from "../api/add-sketch-endpoint";
+import './add-sketch-button.css';
 
 export const AddSketchButton: FC = () => {
 
@@ -17,16 +19,30 @@ export const AddSketchButton: FC = () => {
     const [position, setPosition] = useState<LatLng>();
     const [adding, setAdding] = useState(false);
 
-    const handleOnClick = () => {
+    const handleOnClick = async () => {
 
         if (adding)
-            acceptLocation();
+            await addSketch();
 
         setAdding(prevValue => !prevValue);
     };
 
-    const acceptLocation = () => {
-        alert(`You have selected: ${position}\n Next call webapi.`);
+    const addSketch = async () => {
+
+        const sketchTitle = new Date().toISOString().substring(0, 10);
+        const sketch: Sketch = {
+            activityTypes: ['NordicSki', 'Workout'],
+            title: sketchTitle,
+            location: {
+                latitude: position?.lat,
+                longitude: position?.lng
+            }
+        };
+        const createResult = await CreateSketch({ sketch });
+        if (createResult)
+            alert(`New sketch has been added \n${createResult}`);
+        else
+            alert('Something went wrong');
     };
 
     return (
