@@ -38,7 +38,7 @@ export const AddSketchButton: FC = () => {
                 longitude: position?.lng
             }
         };
-        const createResult = await CreateSketch({ sketch });
+        const createResult = await CreateSketch(sketch);
         if (createResult)
             alert(`New sketch has been added \n${createResult}`);
         else

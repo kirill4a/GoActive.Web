@@ -1,10 +1,6 @@
 import { POST, Sketch } from "../../../shared/api";
 
-interface SketchProps {
-    sketch: Sketch;
-}
-
-export const CreateSketch = async ({ sketch }: SketchProps): Promise<string | undefined> => {
+export const CreateSketch = async (sketch: Sketch): Promise<string | undefined> => {
 
     const response = await POST('/api/v1-prealpha/sketches', {
         body: {
