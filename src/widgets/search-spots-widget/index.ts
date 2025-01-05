@@ -1,0 +1,1 @@
+export { SearchSpotsWidget } from './ui/search-spots-widget'
