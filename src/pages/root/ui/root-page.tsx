@@ -2,6 +2,7 @@ import { LatLng } from "leaflet";
 import { AttributionControl, MapContainer, TileLayer, ZoomControl } from "react-leaflet";
 import { LocationButton } from "../../../widgets/location-button";
 import { AddSketchButton } from "../../../widgets/add-sketch-button";
+import { SearchSpotsWidget } from "../../../widgets/search-spots-widget";
 import './root-page.css'
 
 export const RootPage = () => {
@@ -28,6 +29,7 @@ export const RootPage = () => {
                 <ZoomControl position='bottomright' />
                 <LocationButton zoom={defaultZoom} />
                 <AddSketchButton />
+                <SearchSpotsWidget />
             </MapContainer>
         </>);
 };

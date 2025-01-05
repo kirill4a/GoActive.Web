@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/v1-prealpha/spots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves list of founded spots
+         * @description Use this method to search spots
+         */
+        get: operations["SearchSpots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1-prealpha/sketches": {
         parameters: {
             query?: never;
@@ -49,7 +69,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** @enum {string} */
-        ActivityTypes: "NordicSki" | "Workout";
+        ActivityTypes: "NordicSki" | "Workout" | "RollerSki" | "Biathlon";
         CreateSketchRequest: {
             activityTypes: components["schemas"]["ActivityTypes"][] | null;
             title: string | null;
@@ -86,6 +106,15 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        SearchSpotResult: {
+            /** Format: uuid */
+            id?: string;
+            title?: string | null;
+            activities?: components["schemas"]["ActivityTypes"][] | null;
+        };
+        SearchSpotsResponse: {
+            items?: components["schemas"]["SearchSpotResult"][] | null;
+        };
         SketchDto: {
             /** Format: uuid */
             id?: string;
@@ -102,6 +131,38 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    SearchSpots: {
+        parameters: {
+            query: {
+                q: string;
+                activities?: components["schemas"]["ActivityTypes"][];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchSpotsResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     CreateSketch: {
         parameters: {
             query?: never;

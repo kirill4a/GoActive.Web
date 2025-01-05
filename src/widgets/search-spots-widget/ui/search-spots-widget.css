@@ -1,0 +1,14 @@
+.search-widget-container {
+    top: 3.1em;
+    pointer-events: all;
+}
+
+.search-lookup {
+    width: 82vw;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}

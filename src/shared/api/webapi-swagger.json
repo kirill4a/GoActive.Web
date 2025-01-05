@@ -5,6 +5,58 @@
     "version": "v1-prealpha"
   },
   "paths": {
+    "/api/v1-prealpha/spots": {
+      "get": {
+        "tags": [
+          "Spots"
+        ],
+        "summary": "Retrieves list of founded spots",
+        "description": "Use this method to search spots",
+        "operationId": "SearchSpots",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "activities",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ActivityTypes"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchSpotsResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1-prealpha/sketches": {
       "post": {
         "tags": [
@@ -110,7 +162,9 @@
       "ActivityTypes": {
         "enum": [
           "NordicSki",
-          "Workout"
+          "Workout",
+          "RollerSki",
+          "Biathlon"
         ],
         "type": "string"
       },
@@ -221,6 +275,40 @@
           }
         },
         "additionalProperties": { }
+      },
+      "SearchSpotResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "activities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityTypes"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchSpotsResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchSpotResult"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       },
       "SketchDto": {
         "type": "object",
