@@ -29,7 +29,7 @@ export const RootPage = () => {
                 <ZoomControl position='bottomright' />
                 <LocationButton zoom={defaultZoom} />
                 <AddSketchButton />
-                <SearchSpotsWidget />
+                <SearchSpotsWidget zoom={defaultZoom} />
             </MapContainer>
         </>);
 };

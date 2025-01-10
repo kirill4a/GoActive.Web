@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/v1-prealpha/spots/{spotId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get detailed spot info
+         * @description Use this method to get spot
+         */
+        get: operations["GetSpot"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1-prealpha/spots": {
         parameters: {
             query?: never;
@@ -70,6 +90,12 @@ export interface components {
     schemas: {
         /** @enum {string} */
         ActivityTypes: "NordicSki" | "Workout" | "RollerSki" | "Biathlon";
+        AddressDto: {
+            country?: string | null;
+            region?: string | null;
+            settlement?: string | null;
+            street?: string | null;
+        };
         CreateSketchRequest: {
             activityTypes: components["schemas"]["ActivityTypes"][] | null;
             title: string | null;
@@ -82,6 +108,15 @@ export interface components {
             latitude?: number;
             /** Format: double */
             longitude?: number;
+        };
+        GetSpotResult: {
+            /** Format: uuid */
+            id: string;
+            title: string | null;
+            activities: components["schemas"]["ActivityTypes"][] | null;
+            location?: components["schemas"]["GeoLocationDto"];
+            address?: components["schemas"]["AddressDto"];
+            description?: string | null;
         };
         HttpValidationProblemDetails: {
             type?: string | null;
@@ -109,7 +144,9 @@ export interface components {
         SearchSpotResult: {
             /** Format: uuid */
             id?: string;
+            location?: components["schemas"]["GeoLocationDto"];
             title?: string | null;
+            address?: string | null;
             activities?: components["schemas"]["ActivityTypes"][] | null;
         };
         SearchSpotsResponse: {
@@ -131,6 +168,37 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    GetSpot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                spotId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetSpotResult"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     SearchSpots: {
         parameters: {
             query: {
