@@ -5,6 +5,49 @@
     "version": "v1-prealpha"
   },
   "paths": {
+    "/api/v1-prealpha/spots/{spotId}": {
+      "get": {
+        "tags": [
+          "Spots"
+        ],
+        "summary": "Get detailed spot info",
+        "description": "Use this method to get spot",
+        "operationId": "GetSpot",
+        "parameters": [
+          {
+            "name": "spotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSpotResult"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1-prealpha/spots": {
       "get": {
         "tags": [
@@ -168,6 +211,28 @@
         ],
         "type": "string"
       },
+      "AddressDto": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "region": {
+            "type": "string",
+            "nullable": true
+          },
+          "settlement": {
+            "type": "string",
+            "nullable": true
+          },
+          "street": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateSketchRequest": {
         "required": [
           "activityTypes",
@@ -208,6 +273,42 @@
           "longitude": {
             "type": "number",
             "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetSpotResult": {
+        "required": [
+          "activities",
+          "id",
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "activities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityTypes"
+            },
+            "nullable": true
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoLocationDto"
+          },
+          "address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -283,7 +384,14 @@
             "type": "string",
             "format": "uuid"
           },
+          "location": {
+            "$ref": "#/components/schemas/GeoLocationDto"
+          },
           "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
             "type": "string",
             "nullable": true
           },

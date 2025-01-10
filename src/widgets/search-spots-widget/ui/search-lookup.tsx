@@ -1,30 +1,31 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { Select, Spin } from "antd";
+import { AutoComplete, AutoCompleteProps, Flex, Spin } from "antd";
+import { DefaultOptionType } from "antd/es/select";
 import { DirectionsBike, ErrorOutlineOutlined, Explore, RollerSkating, Spa } from "@mui/icons-material";
 
 import { components } from "../../../shared/api/v1-prealpha";
 import { SearchSpots } from "../api/search-spots-endpoint";
 import { Spot } from "../model/spot";
+import { SearchLookupOptions } from "./search-lookup-options";
 import './search-spots-widget.css';
 
-export const SearchLookup: FC = () => {
+export const SearchLookup: FC<SearchLookupOptions> = ({ onSelected, onClear }) => {
 
     const icons = new Map<components['schemas']['ActivityTypes'], JSX.Element>(
         [
-            ['NordicSki', <Explore fontSize='medium' color='primary' />],
-            ['Biathlon', <DirectionsBike fontSize='medium' color='primary' />],
-            ['Workout', <Spa fontSize='medium' color='primary' />],
-            ['RollerSki', <RollerSkating fontSize='medium' color='primary' />]
+            ['NordicSki', <Explore fontSize='medium' color='primary' key='NordicSki' />],
+            ['Biathlon', <DirectionsBike fontSize='medium' color='primary' key='Biathlon' />],
+            ['Workout', <Spa fontSize='medium' color='primary' key='Workout' />],
+            ['RollerSki', <RollerSkating fontSize='medium' color='primary' key='RollerSki' />]
         ]);
 
     const [query, setQuery] = useState('');
     const [debouncedQuery, setDebouncedQuery] = useState(query);
-
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [data, setData] = useState<Spot[]>([]);
-
     const debounceTimeout = useRef<number | null>(null);
+
+    const [data, setData] = useState<Spot[]>([]);
+    const [options, setOptions] = useState<AutoCompleteProps['options']>([]);
+    const [selectedTitle, setSelectedTitle] = useState('');
 
     useEffect(() => {
 
@@ -51,72 +52,92 @@ export const SearchLookup: FC = () => {
 
         const fetchData = async () => {
 
-            setLoading(true);
-            setError(null);
+            setOptions([renderLoading()]);
 
             try {
                 const result = await SearchSpots({ queryText: debouncedQuery });
                 const spots = result?.items?.map<Spot>(x => {
-                    return { Id: x.id!, Title: x.title!, Activities: x.activities ?? [] };
+                    return {
+                        Id: x.id!,
+                        Latitude: x.location?.latitude!,
+                        Longitude: x.location?.longitude!,
+                        Title: x.title!,
+                        Address: x.address,
+                        Activities: x.activities ?? []
+                    };
                 });
                 setData(spots ?? []);
             }
             catch (error: any) {
-                setError(error);
-            }
-            finally {
-                setLoading(false);
+                setOptions([renderError()]);
             }
         };
 
         fetchData();
     }, [debouncedQuery]);
 
-    const handleSearch = (value: string) => {
+    useEffect(() => setOptions(data.map(renderItem)), [data]);
 
-        setError(null);
-        setLoading(false);
-        setData([]);
-        setQuery(value?.trim());
+    const handleSearch = (value: string) => setQuery(value?.trim());
+
+    const handleSelect = (value: string, option: DefaultOptionType) => {
+
+        setSelectedTitle(option.title ?? '');
+
+        if (!value || !onSelected)
+            return;
+
+        const spot = data.find(x => x.Id === value);
+        if (!spot)
+            return;
+
+        onSelected(value, spot.Latitude, spot.Longitude);
     };
 
-    const renderItem = (item: Spot) => {
-        return <Select.Option key={item.Id} value={item.Title}>
-            <div className='flex-center'>
-                <span>{item.Title}</span>
-                <p className='flex-center'>{item.Activities.map(x => icons.get(x))}</p>
-            </div>
-        </Select.Option>;
-    };
+    const handleClear = () => {
 
-    const renderNotFoundContent = () => {
+        if (!onClear)
+            return;
 
-        if (loading) return renderLoading();
-        if (error) return renderError();
-        return null;
+        onClear();
     }
 
-    const renderLoading = () => <Spin size={'default'} />;
+    const renderLoading = () => ({ label: (<Spin size={'default'} />) });
 
-    const renderError = () => <div className='flex-center'>
-        <ErrorOutlineOutlined fontSize='small' color='warning' />
-        <p>Something went wrong</p>
-    </div>;
+    const renderError = () => ({
+        label: (
+            <Flex align='center'>
+                <ErrorOutlineOutlined fontSize='small' color='warning' />
+                <p>Something went wrong</p>
+            </Flex>)
+    });
+
+    const renderItem = (item: Spot) => ({
+        value: item.Id,
+        title: item.Title,
+        label:
+            (<>
+                <Flex align='center' justify='space-between'>
+                    <b>{item.Title}</b>
+                    <p className='flex-center'>{item.Activities.map(x => icons.get(x))}</p>
+                </Flex>
+                <i>{item.Address}</i>
+            </>)
+    });
 
     return (
         <>
-            <Select className='search-lookup'
-                showSearch={true}
+            <AutoComplete
+                className='search-lookup'
                 allowClear={true}
-                filterOption={false}
-                popupMatchSelectWidth={true}
-                suffixIcon={null}
                 placeholder='Type name, address or activity ....'
-                optionLabelProp='label'
-                notFoundContent={renderNotFoundContent()}
+                value={selectedTitle}
+                options={options}
+                onChange={val => setSelectedTitle(val)}
                 onSearch={handleSearch}
+                onSelect={handleSelect}
+                onClear={handleClear}
             >
-                {data.map(renderItem)}
-            </Select>
+            </AutoComplete>
         </>);
 }
