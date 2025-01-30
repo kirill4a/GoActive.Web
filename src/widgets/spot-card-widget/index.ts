@@ -1,0 +1,1 @@
+export { SpotCard } from './ui/spot-card'

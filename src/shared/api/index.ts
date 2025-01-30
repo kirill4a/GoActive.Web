@@ -1,2 +1,2 @@
 export { GET, POST } from './client';
-export type { Sketch } from './models';
+export type { ActivityTypes, Address, Sketch, SearchedSpot, Spot } from './models';
