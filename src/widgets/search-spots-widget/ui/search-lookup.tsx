@@ -1,29 +1,21 @@
 import { FC, useEffect, useRef, useState } from "react";
+import { ErrorOutlineOutlined } from "@mui/icons-material";
 import { AutoComplete, AutoCompleteProps, Flex, Spin } from "antd";
 import { DefaultOptionType } from "antd/es/select";
-import { DirectionsBike, ErrorOutlineOutlined, Explore, RollerSkating, Spa } from "@mui/icons-material";
 
-import { components } from "../../../shared/api/v1-prealpha";
+import { GetActivityIcon } from "../../../shared/ui/activity-icons";
 import { SearchSpots } from "../api/search-spots-endpoint";
-import { Spot } from "../model/spot";
 import { SearchLookupOptions } from "./search-lookup-options";
+import { SearchedSpot } from "../../../shared/api";
 import './search-spots-widget.css';
 
 export const SearchLookup: FC<SearchLookupOptions> = ({ onSelected, onClear }) => {
-
-    const icons = new Map<components['schemas']['ActivityTypes'], JSX.Element>(
-        [
-            ['NordicSki', <Explore fontSize='medium' color='primary' key='NordicSki' />],
-            ['Biathlon', <DirectionsBike fontSize='medium' color='primary' key='Biathlon' />],
-            ['Workout', <Spa fontSize='medium' color='primary' key='Workout' />],
-            ['RollerSki', <RollerSkating fontSize='medium' color='primary' key='RollerSki' />]
-        ]);
 
     const [query, setQuery] = useState('');
     const [debouncedQuery, setDebouncedQuery] = useState(query);
     const debounceTimeout = useRef<number | null>(null);
 
-    const [data, setData] = useState<Spot[]>([]);
+    const [data, setData] = useState<SearchedSpot[]>([]);
     const [options, setOptions] = useState<AutoCompleteProps['options']>([]);
     const [selectedTitle, setSelectedTitle] = useState('');
 
@@ -56,17 +48,7 @@ export const SearchLookup: FC<SearchLookupOptions> = ({ onSelected, onClear }) =
 
             try {
                 const result = await SearchSpots({ queryText: debouncedQuery });
-                const spots = result?.items?.map<Spot>(x => {
-                    return {
-                        Id: x.id!,
-                        Latitude: x.location?.latitude!,
-                        Longitude: x.location?.longitude!,
-                        Title: x.title!,
-                        Address: x.address,
-                        Activities: x.activities ?? []
-                    };
-                });
-                setData(spots ?? []);
+                setData(result?.items ?? []);
             }
             catch (error: any) {
                 setOptions([renderError()]);
@@ -87,14 +69,16 @@ export const SearchLookup: FC<SearchLookupOptions> = ({ onSelected, onClear }) =
         if (!value || !onSelected)
             return;
 
-        const spot = data.find(x => x.Id === value);
+        const spot = data.find(x => x.id === value);
         if (!spot)
             return;
 
-        onSelected(value, spot.Latitude, spot.Longitude);
+        onSelected(spot);
     };
 
     const handleClear = () => {
+
+        setData([]);
 
         if (!onClear)
             return;
@@ -112,16 +96,16 @@ export const SearchLookup: FC<SearchLookupOptions> = ({ onSelected, onClear }) =
             </Flex>)
     });
 
-    const renderItem = (item: Spot) => ({
-        value: item.Id,
-        title: item.Title,
+    const renderItem = (item: SearchedSpot) => ({
+        value: item.id!,
+        title: item.title!,
         label:
             (<>
                 <Flex align='center' justify='space-between'>
-                    <b>{item.Title}</b>
-                    <p className='flex-center'>{item.Activities.map(x => icons.get(x))}</p>
+                    <b>{item.title}</b>
+                    <p className='flex-center'>{item.activities?.map(x => GetActivityIcon(x))}</p>
                 </Flex>
-                <i>{item.Address}</i>
+                <i>{item.address}</i>
             </>)
     });
 

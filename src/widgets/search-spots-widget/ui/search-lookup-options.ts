@@ -1,5 +1,7 @@
+import { SearchedSpot } from "../../../shared/api";
+
 export interface SearchLookupOptions {
 
-    onSelected(spotId: string, latitude: number, longitude: number): void;
+    onSelected(selectedSpot: SearchedSpot): void;
     onClear(): void;
 }

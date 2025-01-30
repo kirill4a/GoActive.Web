@@ -1,3 +1,5 @@
+import { SearchedSpot } from "../../../shared/api";
+
 export interface SearchSpotsWidgetOptions {
-    zoom?: number;
+    onSelected?: (spot?: SearchedSpot) => void;
 }
