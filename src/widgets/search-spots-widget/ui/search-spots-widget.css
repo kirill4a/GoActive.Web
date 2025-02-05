@@ -1,4 +1,9 @@
 .search-widget-container {
+    display: flex;
+    justify-content: center;
+}
+
+.search-widget {
     bottom: 1.5%;
     pointer-events: all;
     display: flex;

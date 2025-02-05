@@ -25,8 +25,8 @@ export const SearchSpotsWidget: FC<SearchSpotsWidgetOptions> = ({ onSelected }) 
     }
 
     return (
-        <>
-            <div className='leaflet-bottom leaflet-right search-widget-container'>
+        <div className='search-widget-container'>
+            <div className='leaflet-bottom search-widget'>
                 {showLookup && <SearchLookup
                     onSelected={handleSelect}
                     onClear={handleSelect} />}
@@ -34,6 +34,6 @@ export const SearchSpotsWidget: FC<SearchSpotsWidgetOptions> = ({ onSelected }) 
                     {showLookup ? icons.searchOff : icons.search}
                 </IconButton>
             </div>
-        </>
+        </div>
     );
 }

@@ -92,10 +92,8 @@ export const RootPage = () => {
         <>
             <div id='main-container' ref={containerRef}>
                 {displayMap()}
-                <div>
-                    <SearchSpotsWidget onSelected={handleSearched} />
-                    {spot?.id && <SpotCard spotId={spot.id} isOpen={cardOpen} onClose={handleSpotCardClose} onDataLoaded={handleSpotLoaded} />}
-                </div>
+                <SearchSpotsWidget onSelected={handleSearched} />
+                {spot?.id && <SpotCard spotId={spot.id} isOpen={cardOpen} onClose={handleSpotCardClose} onDataLoaded={handleSpotLoaded} />}
             </div>
         </>);
 
