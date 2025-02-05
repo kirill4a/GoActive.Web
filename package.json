@@ -16,7 +16,6 @@
     "@mui/icons-material": "^6.4.1",
     "@mui/material": "^6.4.1",
     "@mui/system": "^6.4.1",
-    "antd": "^5.22.7",
     "leaflet": "^1.9.4",
     "openapi-fetch": "^0.13.3",
     "react": "^19.0.0",

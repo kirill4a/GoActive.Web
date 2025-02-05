@@ -1,7 +1,6 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
+import { Autocomplete, AutocompleteRenderInputParams, Box, CircularProgress, debounce, styled, TextField, Typography } from "@mui/material";
 import { ErrorOutlineOutlined } from "@mui/icons-material";
-import { AutoComplete, AutoCompleteProps, Flex, Spin } from "antd";
-import { DefaultOptionType } from "antd/es/select";
 
 import { GetActivityIcon } from "../../../shared/ui/activity-icons";
 import { SearchSpots } from "../api/search-spots-endpoint";
@@ -9,67 +8,61 @@ import { SearchLookupOptions } from "./search-lookup-options";
 import { SearchedSpot } from "../../../shared/api";
 import './search-spots-widget.css';
 
+const FlexBox = styled(Box)(({ theme }) => ({
+    display: 'flex'
+}));
+
+const SearchInput = styled(TextField)({
+    '.MuiInputBase-root': {
+        backgroundColor: '#f0f0ff'
+    },
+});
+
 export const SearchLookup: FC<SearchLookupOptions> = ({ onSelected, onClear }) => {
 
     const [query, setQuery] = useState('');
-    const [debouncedQuery, setDebouncedQuery] = useState(query);
-    const debounceTimeout = useRef<number | null>(null);
+    const [value, setValue] = useState<SearchedSpot | null>();
+    const [data, setData] = useState<readonly SearchedSpot[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
 
-    const [data, setData] = useState<SearchedSpot[]>([]);
-    const [options, setOptions] = useState<AutoCompleteProps['options']>([]);
-    const [selectedTitle, setSelectedTitle] = useState('');
+    const fetchData = async (query: string) => {
+
+        if (query === '') {
+            setData([]);
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const result = await SearchSpots({ queryText: query });
+            setData(result?.items ?? []);
+        }
+        catch (error: any) {
+            setError(true);
+        }
+        finally {
+            setLoading(false);
+        }
+    };
+
+    const debounceFetch = useMemo(() => debounce(query => fetchData(query), 1000), []);
 
     useEffect(() => {
 
-        if (debounceTimeout.current) {
-            clearTimeout(debounceTimeout.current);
-        }
-
-        debounceTimeout.current = setTimeout(() => {
-            setDebouncedQuery(query);
-        }, 1000);
-
-        return () => {
-            if (debounceTimeout.current) {
-                clearTimeout(debounceTimeout.current);
-            }
-        }
+        debounceFetch(query);
+        return () => { }
     }, [query]);
 
-    useEffect(() => {
+    const handleSearch = (text: string) => setQuery(text?.trim());
 
-        if (!debouncedQuery) {
-            return;
-        }
+    const handleSelect = (key?: string) => {
 
-        const fetchData = async () => {
-
-            setOptions([renderLoading()]);
-
-            try {
-                const result = await SearchSpots({ queryText: debouncedQuery });
-                setData(result?.items ?? []);
-            }
-            catch (error: any) {
-                setOptions([renderError()]);
-            }
-        };
-
-        fetchData();
-    }, [debouncedQuery]);
-
-    useEffect(() => setOptions(data.map(renderItem)), [data]);
-
-    const handleSearch = (value: string) => setQuery(value?.trim());
-
-    const handleSelect = (value: string, option: DefaultOptionType) => {
-
-        setSelectedTitle(option.title ?? '');
-
-        if (!value || !onSelected)
+        if (!key || !onSelected)
             return;
 
-        const spot = data.find(x => x.id === value);
+        const spot = data.find(x => x.id === key);
         if (!spot)
             return;
 
@@ -78,7 +71,7 @@ export const SearchLookup: FC<SearchLookupOptions> = ({ onSelected, onClear }) =
 
     const handleClear = () => {
 
-        setData([]);
+        setData(value ? [value] : []);
 
         if (!onClear)
             return;
@@ -86,42 +79,85 @@ export const SearchLookup: FC<SearchLookupOptions> = ({ onSelected, onClear }) =
         onClear();
     }
 
-    const renderLoading = () => ({ label: (<Spin size={'default'} />) });
+    const renderInput = (params: AutocompleteRenderInputParams) =>
+        <SearchInput
+            {...params}
+            label='Type name, address or activity ....'
+            slotProps={{
+                formHelperText: {
+                    component: 'div'
+                },
+                input: {
+                    ...params.InputProps,
+                    endAdornment: (
+                        <>
+                            {loading ? <CircularProgress size={31} /> : null}
+                            {params.InputProps.endAdornment}
+                        </>
+                    )
+                }
+            }}
+            error={!!error}
+            helperText={!!error && renderError()}
+        />;
 
-    const renderError = () => ({
-        label: (
-            <Flex align='center'>
-                <ErrorOutlineOutlined fontSize='small' color='warning' />
-                <p>Something went wrong</p>
-            </Flex>)
-    });
+    const renderError = () => (
+        <FlexBox>
+            <ErrorOutlineOutlined fontSize='small' color='warning' />
+            <p>Something went wrong</p>
+        </FlexBox>);
 
-    const renderItem = (item: SearchedSpot) => ({
-        value: item.id!,
-        title: item.title!,
-        label:
-            (<>
-                <Flex align='center' justify='space-between'>
-                    <b>{item.title}</b>
-                    <p className='flex-center'>{item.activities?.map(x => GetActivityIcon(x))}</p>
-                </Flex>
-                <i>{item.address}</i>
-            </>)
-    });
+    const renderItem = (props: { [x: string]: any; key: any; }, item: SearchedSpot) => {
+
+        const { key, ...optionProps } = props;
+        return (
+            <li key={key} {...optionProps}>
+                <Box sx={{ width: '100%' }}>
+                    <FlexBox sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+                        <b>{item.title}</b>
+                        <FlexBox>
+                            {item.activities?.map(x => GetActivityIcon(x))}
+                        </FlexBox>
+                    </FlexBox>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        <i>{item.address}</i>
+                    </Typography>
+                </Box>
+            </li>
+        )
+    };
 
     return (
         <>
-            <AutoComplete
+            <Autocomplete
                 className='search-lookup'
-                allowClear={true}
-                placeholder='Type name, address or activity ....'
-                value={selectedTitle}
-                options={options}
-                onChange={val => setSelectedTitle(val)}
-                onSearch={handleSearch}
-                onSelect={handleSelect}
-                onClear={handleClear}
+                freeSolo
+                autoComplete
+                autoSelect
+                filterSelectedOptions
+                filterOptions={x => x}
+                renderInput={renderInput}
+                noOptionsText='Nothing found'
+                value={value}
+                options={data}
+                renderOption={renderItem}
+                getOptionLabel={option => typeof option === 'string' ? option : (option.title ?? 'no title')}
+                onInputChange={(_, val, reason) => {
+
+                    setError(false);
+                    if (reason === 'clear' || val === '')
+                        handleClear();
+
+                    if (reason === 'input')
+                        handleSearch(val);
+                }}
+                onChange={(_, item) => {
+
+                    if (typeof item === 'string')
+                        return;
+                    handleSelect(item?.id);
+                }}
             >
-            </AutoComplete>
+            </Autocomplete >
         </>);
 }
